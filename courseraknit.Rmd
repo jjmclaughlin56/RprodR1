@@ -1,0 +1,72 @@
+---
+title: "courseraRR"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r code}
+install.packages('ggplot2')
+library('ggplot2')
+
+activity <- read.csv("activity.csv", sep = ",", header = TRUE)
+
+ggplot(data = activity, aes(date, steps)) + stat_summary(fun.y = sum, geom = "bar")
+
+
+meandays <- aggregate(steps ~ date, activity,mean)
+mediandays <- aggregate(steps ~ date, activity,median)
+
+ggplot(data = meandays, aes(date, steps, group = 1)) + stat_summary(fun.y = sum, geom = "line")
+
+avg_interval <- aggregate(steps ~ interval, activity, mean)
+subset(avg_interval, steps==max(avg_interval$steps))
+
+##input missing data
+
+sum(is.na(activity))
+
+activity2<- activity
+nas<- is.na(activity2$steps)
+avg_interval<- tapply(activity2$steps, activity2$interval, mean, na.rm=TRUE, simplify = TRUE)
+activity2$steps[nas] <- avg_interval[as.character(activity2$interval[nas])]
+names(activity2)
+
+sum(is.na(activity2))
+
+ggplot(data = activity, aes(date, steps)) + stat_summary(fun.y = sum, geom = "bar")
+
+activity2$date <- as.Date(activity2$date, format = "%m/%d/%Y")
+
+weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+
+activity2$wDay <- factor((weekdays(activity2$date) %in% weekdays1), 
+                   levels=c(FALSE, TRUE), labels=c('weekend', 'weekday'))
+
+head(activity2)
+
+
+library(lattice)
+
+avg <- aggregate(steps ~ interval+wDay,activity2, mean)
+
+xyplot(steps~interval|wDay, data=avg, type="l",  layout = c(1,2),
+       main="Average Steps per Interval Based on Type of Day", 
+       ylab="Average Number of Steps", xlab="Interval")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
